@@ -24,10 +24,25 @@ const keypointlines = {
   11: [12, 13],    // left hip to right hip, left knee
   12: [14],        // right hip to right knee
   13: [15],        // left knee to left ankle
-  14: [17],        // right knee to right ankle
+  14: [16],        // right knee to right ankle
 }
 
-const confidence = 0.7
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+
+const rightside = [2, 4, 6, 8, 10, 12, 14, 16];
+const leftside = [1, 3, 5, 7, 9, 11, 13, 15];
+
+const confidence = 0.8;
+
+const imgHeight = 417;
+const imgWidth = 357;
 
 export default function App() {
   const imgref = useRef();
@@ -41,16 +56,20 @@ export default function App() {
       // console.log(canvasref.current);
       let ctx = canvasref.current.getContext('2d');
       let scale = 1; // get the min scale to fit
-      let x = (ctx.canvas.width - (960 * scale) ) / 2; // centre x
-      let y = (ctx.canvas.height - (640 * scale) ) / 2; // centre y
+      let x = (ctx.canvas.width - (imgWidth * scale) ) / 2; // centre x
+      let y = (ctx.canvas.height - (imgHeight * scale) ) / 2; // centre y
 
-      ctx.drawImage(imgref.current, x, y, 960 * scale, 640 * scale); // draw scaled img onto the canvas.
+      ctx.drawImage(imgref.current, x, y, imgWidth * scale, imgHeight * scale); // draw scaled img onto the canvas.
 
-      // console.log(res.keypoints[0]);
+      let rightscore = 0;
+      let leftscore = 0;
+
+      // loop through keypoints
       for (let i = 0; i < res.keypoints.length; i++) {
         // A keypoint is an object describing a body part (like rightArm or leftShoulder)
         let keypoint = res.keypoints[i];
-        // Only draw an ellipse is the pose probability is bigger than 0.7
+        // draw lines
+        // Only draw an ellipse is the pose probability is bigger than confidence
         if (keypoint.score > confidence) {
           // point
           ctx.fillStyle = "#00FFFF";
@@ -61,6 +80,8 @@ export default function App() {
           // line
           if (i in keypointlines) {
             for (let con in keypointlines[i]) {
+              // console.log(res.keypoints[keypointlines[i][con]]);
+              // console.log(i);
               if (res.keypoints[keypointlines[i][con]].score > confidence) {
                 // console.log("draw line from " + i + " to " + keypointlines[i][con]);
                 ctx.beginPath();
@@ -74,25 +95,26 @@ export default function App() {
             }
           }
         }
+
+        // compute average left or right side
+        if (rightside.includes(i)) {
+          rightscore += keypoint.score;
+        }
+        else if (leftside.includes(i)) {
+          leftscore += keypoint.score;
+        }
       }
+      // averages
+      console.log(`Right side average ${rightscore / rightside.length}`);
+      console.log(`Left side average ${leftscore / leftside.length}`);
     })
   });
 
   return (
     <View style={styles.container}>
-      <img src={require('./images/jason_scaled.jpg')} style={{height: 640, width: 960, resizeMode : 'stretch', display: 'none'}} ref={imgref} />
-      <canvas ref={canvasref} width="960" height="640"/>
+      <img src={require('./images/gamer2.png')} style={{height: imgHeight, width: imgWidth, resizeMode : 'stretch', display: 'none'}} ref={imgref} />
+      <canvas ref={canvasref} width={imgWidth} height={imgHeight}/>
       <StatusBar style="auto" />
     </View>
   );
 }
-
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
