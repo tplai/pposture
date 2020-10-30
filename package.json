@@ -1,27 +1,38 @@
 {
-  "main": "node_modules/expo/AppEntry.js",
-  "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "eject": "expo eject"
-  },
+  "name": "pposture-react",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
-    "@tensorflow-models/posenet": "^2.2.1",
-    "@tensorflow/tfjs": "^2.4.0",
-    "@tensorflow/tfjs-backend-webgl": "^2.4.0",
-    "@tensorflow/tfjs-converter": "^2.4.0",
-    "@tensorflow/tfjs-core": "^2.4.0",
-    "expo": "~39.0.2",
-    "expo-status-bar": "~1.0.2",
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-39.0.2.tar.gz",
-    "react-native-web": "~0.13.12"
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "react-scripts": "4.0.0",
+    "web-vitals": "^0.2.4"
   },
-  "devDependencies": {
-    "@babel/core": "~7.9.0"
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
-  "private": true
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }
