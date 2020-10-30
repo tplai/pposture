@@ -1,5 +1,9 @@
 import imgsrc from './images/gamer2.png';
+import logo from './logo.svg';
 import React, { useEffect, useRef, } from 'react';
+import Navbar from 'react-bootstrap/Navbar';
+import './index.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 // import posenet from '@tensorflow-models/posenet';
 const posenet = require('@tensorflow-models/posenet');
 require('@tensorflow/tfjs-backend-webgl');
@@ -102,8 +106,22 @@ export default function App() {
 
   return (
     <div className="App">
-      <img src={imgsrc} style={{height: imgHeight, width: imgWidth, display: 'none'}} ref={imgref} />
-      <canvas ref={canvasref} width={imgWidth} height={imgHeight}/>
+      <Navbar bg="dark" variant="dark">
+        <Navbar.Brand href="#home">
+          <img
+            alt=""
+            src={logo}
+            width="30"
+            height="30"
+            className="d-inline-block align-top"
+          />{' '}
+          Perfect Posture
+        </Navbar.Brand>
+      </Navbar>
+      <div className="body">
+        <img src={imgsrc} style={{height: imgHeight, width: imgWidth, display: 'none'}} ref={imgref} />
+        <canvas ref={canvasref} width={imgWidth} height={imgHeight}/>
+      </div>
     </div>
   );
 }
