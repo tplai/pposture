@@ -74,9 +74,6 @@ export default function App() {
         // ctx.drawImage(imgref.current)
         ctx.drawImage(imgref.current, x, y, imgWidth * scale, imgHeight * scale); // draw scaled img onto the canvas.
 
-        let rightscore = 0;
-        let leftscore = 0;
-
         // loop through keypoints
         for (let i = 0; i < res.keypoints.length; i++) {
           // A keypoint is an object describing a body part (like rightArm or leftShoulder)
@@ -109,19 +106,94 @@ export default function App() {
 
           // compute average left or right side
           if (rightside.includes(i)) {
-            rightscore += keypoint.score;
+            rightScore += keypoint.score;
           }
           else if (leftside.includes(i)) {
-            leftscore += keypoint.score;
+            leftScore += keypoint.score;
           }
-        }
-        // averages
-        console.log(`Right side average ${rightscore / rightside.length}`);
-        console.log(`Left side average ${leftscore / leftside.length}`);
+        } // Drawing canvas.
+        analyzePosture();
       })
-
     }
   }, [picture, imgHeight, imgWidth]);
+
+  let rightScore = 0;
+  let leftScore = 0;
+
+  const hipShoulderWeight = .75;
+  const shoulderEarWeight = .25;
+
+  const rightSideConfidenceAvg = rightScore / rightside.length;
+  const leftSideConfidenceAvg = leftScore / leftside.length;
+
+  let isRightSide = false;
+
+  // Main parts coordinates.
+  let hipCordinates; // Origin coordinate.
+  let kneeCordinates;
+  let shoulderCoordinates;
+  let earCoordinates;
+
+  function goodImageQuality(leftConfidence, rightConfidence) {
+    const differenceMin = .2; 
+    const difference = Math.abs(leftConfidence - rightConfidence);
+    return difference > differenceMin;
+  }
+
+  function determineImgSide() {
+    if (rightSideConfidenceAvg > leftSideConfidenceAvg) {
+      isRightSide = true;
+    } 
+  }
+
+  function getHipShoulderAngle() {
+    let xOrigin = hipCordinates[0];
+    let yOrigin = hipCordinates[1];
+    let xKneeVec = kneeCordinates[0] - xOrigin;
+    let yKneeVec = kneeCordinates[1] - yOrigin;
+    let xShoulderVec = shoulderCoordinates[0] - xOrigin;
+    let yShoulderVec = shoulderCoordinates[1] - yOrigin;
+    return Math.atan((xKneeVec-xShoulderVec)/(yKneeVec-yShoulderVec));
+  }
+
+  function getShoulderEarAngle() {
+    let xOrigin = shoulderCoordinates[0];
+    let yOrigin = shoulderCoordinates[1];
+    let xEarVec = earCoordinates[0] - xOrigin;
+    let yEarVec = earCoordinates[1] - yOrigin;
+    let xShoulderVec = hipCordinates[0] - xOrigin;
+    let yShoulderVec = hipCordinates[1] - yOrigin;
+    return Math.atan((xEarVec-xShoulderVec)/(yEarVec-yShoulderVec));
+  }
+
+  function analyzePosture() {
+    const expectedShoulderAngle = 90;
+    const expectedEarAngle = 180;
+    let hipShoulderAngle = getHipShoulderAngle();
+    let shoulderEarAngle = getShoulderEarAngle();
+
+    // Shoulder to hip analysis.
+    let shoulderAngleDeviation = Math.abs(expectedShoulderAngle - hipShoulderAngle);
+    if (shoulderAngleDeviation > 6) { // If angle > 6 degrees of deviation, recommend insights..
+      console.log("push shoulders back");
+    }
+
+    // Ear to shoulder analysis.
+    let earAngleDeviation = Math.abs(expectedEarAngle - shoulderEarAngle);
+    if (earAngleDeviation > 6) { // If angle > 6 degrees of deviation, recommend insights..
+      console.log("Push your neck back");
+    }
+    // Evaluating perfect posture score.
+    let postureScore = getPostureScore();
+  }
+
+  function getPostureScore(shoulderDeviation, earDeviation) {
+    const angleWeightFactor = 3; // 3 angles of deviation counts as 1 point less.
+    let shoulderScoreOffset = hipShoulderWeight * (shoulderDeviation / angleWeightFactor);
+    let earScoreOffset = shoulderEarWeight * (earDeviation / angleWeightFactor);
+    let score =  Math.round(10 - (shoulderScoreOffset + earScoreOffset)); // Score out of 10.
+    return score < 0 ? 0 : score;
+  }
 
   return (
     <div className="App">
