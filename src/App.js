@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, } from 'react';
 import ImageUploader from "react-images-upload";
 import Navbar from 'react-bootstrap/Navbar';
 import './index.css';
+import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 // import posenet from '@tensorflow-models/posenet';
 const posenet = require('@tensorflow-models/posenet');
@@ -218,9 +219,9 @@ export default function App() {
             imgExtension={[".jpg", ".gif", ".png", ".gif"]}
             maxFileSize={5242880}
           />
+          <img src={picture} alt="upload" style={{display: 'none'}} ref={imgref} />
+          <canvas width={imgWidth} height={imgHeight} ref={canvasref} />
         </div>
-        <img src={picture} alt="upload" style={{display: 'none'}} ref={imgref} />
-        <canvas width={imgWidth} height={imgHeight} ref={canvasref} />
     </div>
     </div>
   );
