@@ -40,9 +40,17 @@ export default function App() {
   const imgref = useRef();
   const canvasref = useRef();
 
+
+
+
+
   const [imgWidth, setImgWidth] = useState(-1);
   const [imgHeight, setImgHeight] = useState(-1);
   const [picture, setPicture] = useState();
+  const [avgPosture, setAvgPosture] = useState("");
+  const [insights, setInsights] = useState("");
+  const [score, setScore] = useState("");
+  const [headTilt, setHeadTilt] = useState("");
 
   const onDrop = picture => {
     // console.log(picture);
@@ -50,11 +58,17 @@ export default function App() {
     let reader = new FileReader();
     reader.onload = (e) => {
       // console.log(e.target);
+      setAvgPosture("Average Posture")
+      setInsights("Insights:");
+      let numerator = 7;
+      setScore(numerator + "/10");
+      let angle = 74;
+      setHeadTilt("Head Tilt: " + angle + "°");
       setPicture(e.target.result);
-      // console.log(e.target);
     }
     reader.readAsDataURL(picture[0]);
   };
+
 
   useEffect(() => {
     if (picture) {
@@ -64,9 +78,9 @@ export default function App() {
       const pose = estimatePoseOnImage(imgref.current);
       // console.log(pose);
       pose.then((res) => {
-        console.log(res);
-        console.log(canvasref.current);
-        console.log(imgref.current);
+        //console.log(res);
+        //console.log(canvasref.current);
+        //console.log(imgref.current);
 
         let ctx = canvasref.current.getContext('2d');
         let scale = 1; // get the min scale to fit
@@ -117,8 +131,8 @@ export default function App() {
           }
         }
         // averages
-        console.log(`Right side average ${rightscore / rightside.length}`);
-        console.log(`Left side average ${leftscore / leftside.length}`);
+        // console.log(`Right side average ${rightscore / rightside.length}`);
+        // console.log(`Left side average ${leftscore / leftside.length}`);
       })
 
     }
@@ -147,8 +161,13 @@ export default function App() {
             imgExtension={[".jpg", ".gif", ".png", ".gif"]}
             maxFileSize={5242880}
           />
-          <img src={picture} alt="upload" style={{display: 'none'}} ref={imgref} />
+          <img src={picture} alt="upload" style={{display: 'none'}} ref={imgref}/>
           <canvas width={imgWidth} height={imgHeight} ref={canvasref} />
+          <br></br>
+          <h2> { avgPosture } </h2>
+          <h3> { score } </h3>
+          <b>{ insights } </b>
+          <p>{ headTilt } </p>
         </div>
     </div>
     </div>
