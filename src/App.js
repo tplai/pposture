@@ -60,7 +60,7 @@ export default function App() {
   const [canvasWidth, setCanvasWidth] = useState(0);
   const [canvasHeight, setCanvasHeight] = useState(0);
   const [picture, setPicture] = useState();
-  const [validImg, setValidImg] = useState(true);
+  const [isValidImg, setIsValidImg] = useState(true);
   const [isRightSide, setRightSide] = useState(false);
   const [avgPosture, setAvgPosture] = useState("");
   const [insights, setInsights] = useState("");
@@ -85,12 +85,12 @@ export default function App() {
       pose.then((res) => {
         let keypoints = res.keypoints;
         if (!goodImageQuality(keypoints)) {
-          setValidImg(false);
+          setIsValidImg(false);
           setImgWidth(0);
           setImgHeight(0);
           return;
         }
-        setValidImg(true);
+        setIsValidImg(true);
         setImgWidth(imgref.current.naturalWidth);
         setImgHeight(imgref.current.naturalHeight);
 
@@ -351,7 +351,7 @@ export default function App() {
           <img src={picture} alt="upload" style={{display: 'none'}} ref={imgref}/>
           <canvas width={imgWidth} height={imgHeight} ref={canvasref} />
           <br></br>
-          {validImg ?
+          {isValidImg ?
             <div className="insights-text">
               <div><b>{ avgPosture }</b></div>
               <div><b>{ score }</b></div>
@@ -359,9 +359,13 @@ export default function App() {
               <div>{ headTilt } </div>
               <div>{ backTilt } </div>
             </div>
-          : <div >
+          : null
+          }
+          {!isValidImg ?
+            <div >
               Cannot estimate your posture from this image, try takin a better picture or click the 'Help' button above.
             </div>
+            : null
           }
         </div>
     </div>
