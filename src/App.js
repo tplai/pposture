@@ -24,7 +24,14 @@ const keypointlines = {
   12: [14],        // right hip to right knee
   13: [15],        // left knee to left ankle
   14: [16],        // right knee to right ankle
-}
+};
+
+const bodyCoordinates = {
+  ear: {}, // Left, Right
+  shoulder: {},
+  hip: {},
+  knee: {} 
+};
 
 async function estimatePoseOnImage(imageElement) {
   // load the posenet model from a checkpoint
@@ -74,11 +81,33 @@ export default function App() {
         let y = (ctx.canvas.height - (imgHeight * scale) ) / 2; // centre y
         // ctx.drawImage(imgref.current)
         ctx.drawImage(imgref.current, x, y, imgWidth * scale, imgHeight * scale); // draw scaled img onto the canvas.
-
         // loop through keypoints
         for (let i = 0; i < res.keypoints.length; i++) {
           // A keypoint is an object describing a body part (like rightArm or leftShoulder)
           let keypoint = res.keypoints[i];
+          
+          // Assign coordinates.
+          let bodyPart = {};
+          bodyPart.x = keypoint.position.x;
+          bodyPart.y = keypoint.position.y;
+          if (keypoint.part === "leftEar") {
+            bodyCoordinates.ear.left = bodyPart;
+          } else if (keypoint.part === "rightEar") {
+            bodyCoordinates.ear.right = bodyPart;
+          } else if (keypoint.part === "leftShoulder") {
+            bodyCoordinates.shoulder.left = bodyPart;
+          } else if (keypoint.part === "rightShoulder") {
+            bodyCoordinates.shoulder.right = bodyPart;
+          } else if (keypoint.part === "leftHip") {
+            bodyCoordinates.hip.left = bodyPart;
+          } else if (keypoint.part === "rightHip") {
+            bodyCoordinates.hip.right = bodyPart;
+          } else if (keypoint.part === "leftKnee") {
+            bodyCoordinates.knee.left = bodyPart;
+          } else if (keypoint.part === "rightKnee") {
+            bodyCoordinates.knee.right = bodyPart;
+          }          
+
           // draw lines
           // Only draw an ellipse is the pose probability is bigger than confidence
           if (keypoint.score > confidence) {
@@ -130,10 +159,10 @@ export default function App() {
   let isRightSide = false;
 
   // Main parts coordinates.
-  let hipCordinates; // Origin coordinate.
-  let kneeCordinates;
-  let shoulderCoordinates;
-  let earCoordinates;
+  let hipCordinates = [0,0]; // Origin coordinate.
+  let kneeCordinates = [0,0];
+  let shoulderCoordinates = [0,0];
+  let earCoordinates = [0,0];
 
   function goodImageQuality(leftConfidence, rightConfidence) {
     const differenceMin = .2; 
@@ -144,7 +173,26 @@ export default function App() {
   function determineImgSide() {
     if (rightSideConfidenceAvg > leftSideConfidenceAvg) {
       isRightSide = true;
-    } 
+    }
+    if (isRightSide) {
+      hipCordinates.push(bodyCoordinates.hip.right.x);
+      hipCordinates.push(bodyCoordinates.hip.right.y);
+      kneeCordinates.push(bodyCoordinates.knee.right.x);
+      kneeCordinates.push(bodyCoordinates.knee.right.y);
+      shoulderCoordinates.push(bodyCoordinates.shoulder.right.x);
+      shoulderCoordinates.push(bodyCoordinates.shoulder.right.y);
+      earCoordinates.push(bodyCoordinates.ear.right.x);
+      earCoordinates.push(bodyCoordinates.ear.right.y);
+    } else { // Left side parts.
+      hipCordinates.push(bodyCoordinates.hip.left.x);
+      hipCordinates.push(bodyCoordinates.hip.left.y);
+      kneeCordinates.push(bodyCoordinates.knee.left.x);
+      kneeCordinates.push(bodyCoordinates.knee.left.y);
+      shoulderCoordinates.push(bodyCoordinates.shoulder.left.x);
+      shoulderCoordinates.push(bodyCoordinates.shoulder.left.y);
+      earCoordinates.push(bodyCoordinates.ear.left.x);
+      earCoordinates.push(bodyCoordinates.ear.left.y);
+    }
   }
 
   function getHipShoulderAngle() {
@@ -170,6 +218,7 @@ export default function App() {
   function analyzePosture() {
     const expectedShoulderAngle = 90;
     const expectedEarAngle = 180;
+    determineImgSide();
     let hipShoulderAngle = getHipShoulderAngle();
     let shoulderEarAngle = getShoulderEarAngle();
 
