@@ -2,6 +2,7 @@ import logo from './logo.png';
 import examplePic from './PicExample.png';
 import React, { useEffect, useRef, useState, } from 'react';
 import ImageUploader from "react-images-upload";
+import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Popup from 'reactjs-popup';
 import 'reactjs-popup';
@@ -13,6 +14,8 @@ const posenet = require('@tensorflow-models/posenet');
 require('@tensorflow/tfjs-backend-webgl');
 
 const confidence = 0.8;
+
+const angleWeightFactor = 4.0; // 4 angles of deviation counts as 1 point less.
 
 const canvasHeight = 500;
 
@@ -57,6 +60,7 @@ export default function App() {
   const [canvasWidth, setCanvasWidth] = useState(0);
   const [canvasHeight, setCanvasHeight] = useState(0);
   const [picture, setPicture] = useState();
+  const [isRightSide, setRightSide] = useState(false);
   const [avgPosture, setAvgPosture] = useState("");
   const [insights, setInsights] = useState("");
   const [score, setScore] = useState("");
@@ -64,11 +68,8 @@ export default function App() {
   const [backTilt, setBackTilt] = useState();
 
   const onDrop = picture => {
-    // console.log(picture);
-    // setPictures(picture);
     let reader = new FileReader();
     reader.onload = (e) => {
-
       setPicture(e.target.result);
     }
     reader.readAsDataURL(picture[0]);
@@ -173,8 +174,6 @@ export default function App() {
   const rightSideConfidenceAvg = rightScore / rightside.length;
   const leftSideConfidenceAvg = leftScore / leftside.length;
 
-  let isRightSide = false;
-
   // Main parts coordinates.
   let hipCordinates = []; // Origin coordinate.
   let kneeCordinates = [];
@@ -189,7 +188,7 @@ export default function App() {
 
   function determineImgSide() {
     if (rightSideConfidenceAvg > leftSideConfidenceAvg) {
-      isRightSide = true;
+      setRightSide(true);
     }
     if (isRightSide) {
       hipCordinates.push(bodyCoordinates.hip.right.x);
@@ -213,26 +212,18 @@ export default function App() {
   }
 
   function getHipShoulderAngle() {
-    // let xOrigin = hipCordinates[0];
-    // let yOrigin = hipCordinates[1];
-    //let xKneeVec = kneeCordinates[0] - xOrigin;
-    //let yKneeVec = kneeCordinates[1] - yOrigin;
     let xYaxisVec = 0;
     let yYaxisVec = 1; // Arbitrary 1 value just to go straight up
     let xShoulderVec = shoulderCoordinates[0] - hipCordinates[0];
     let yShoulderVec = hipCordinates[1] - shoulderCoordinates[1];
-    // console.log(`yAXIS vec: (${xYaxisVec}, ${yYaxisVec})`);
-    // console.log(`shoulder vec: (${xShoulderVec}, ${yShoulderVec})`);
     return Math.abs((Math.atan2(yShoulderVec, xShoulderVec) - Math.atan2(yYaxisVec, xYaxisVec)) * 180 / Math.PI);
   }
 
   function getShoulderEarAngle() {
     let xEarVec = earCoordinates[0] - shoulderCoordinates[0];
     let yEarVec = shoulderCoordinates[1] - earCoordinates[1];
-    //let xShoulderVec = hipCordinates[0] - xOrigin;
-    //let yShoulderVec = hipCordinates[1] - yOrigin;
     let xYaxisVec = 0;
-    let yYaxisVec = 1; // Arbitrary 10 value just to go straight up
+    let yYaxisVec = 1; // Arbitrary 1 value just to go straight up
     return Math.abs((Math.atan2(yEarVec, xEarVec) - Math.atan2(yYaxisVec, xYaxisVec)) * 180 / Math.PI);
   }
 
@@ -243,26 +234,11 @@ export default function App() {
     let hipShoulderAngle = getHipShoulderAngle();
     let shoulderEarAngle = getShoulderEarAngle();
 
-    // console.log("hipshouder angle: " + hipShoulderAngle);
-    // console.log("earshoulder angle: " + shoulderEarAngle);
-
-    // Shoulder to hip analysis.
     let shoulderAngleDeviation = Math.abs(expectedShoulderAngle - hipShoulderAngle);
-    // console.log("shoulder deiation is: " + shoulderAngleDeviation);
-    // if (shoulderAngleDeviation > 6) { // If angle > 6 degrees of deviation, recommend insights..
-    //   console.log("push shoulders back");
-    // }
-
-    // Ear to shoulder analysis.
     let earAngleDeviation = Math.abs(expectedEarAngle - shoulderEarAngle);
-    // console.log("ear angle deviation: "+ earAngleDeviation);
-    // if (earAngleDeviation > 6) { // If angle > 6 degrees of deviation, recommend insights..
-    //   console.log("Push your neck back");
-    // }
+
     // Evaluating perfect posture score.
     let postureScore = getPostureScore(shoulderAngleDeviation, earAngleDeviation);
-    // console.log("posture score is: " + postureScore);
-    // console.log(e.target);
     if (postureScore >= 0 && postureScore < 5) {
       setAvgPosture("Poor Posture")
     }
@@ -272,17 +248,39 @@ export default function App() {
     else if (postureScore >= 8 && postureScore <= 10) {
       setAvgPosture("Great Posture")
     }
+
     setInsights("Insights:");
     setScore(postureScore.toFixed(2)+"/10");
-    setHeadTilt("Neck Tilt: " + shoulderEarAngle.toFixed(2) + "°");
-    setBackTilt("Back Straightness: " + hipShoulderAngle.toFixed(2) + "°");
+
+    let backScore = Math.round(shoulderAngleDeviation / angleWeightFactor);
+    let neckScore = Math.round(earAngleDeviation / angleWeightFactor);
+
+    // Shoulder to hip analysis.
+    if (backScore >= 0 && backScore < 2) {
+      setBackTilt("Back Straightness: Your back is straight!");
+    }
+    else if (backScore >= 2 && backScore < 4) {
+      setBackTilt("Back Straightness: Your back is slightly tilted - try aligning it upright");
+    }
+    else if (backScore >= 4) {
+      setBackTilt("Back Straightness: Your back is very curved - try aligning it upright");
+    }
+
+    // Ear to shoulder analysis.
+    if (neckScore >= 0 && neckScore < 4) {
+      setHeadTilt("Neck Position: Your neck is positioned well!");
+    }
+    else if (neckScore >= 4 && neckScore < 8) {
+      setHeadTilt("Neck Position: Your neck is slightly in front of your body - try aligning it above your shoulders");
+    }
+    else if (neckScore >= 8) {
+      setHeadTilt("Neck Position: Your neck is too far in front of your body - try aligning it above your shoulders");
+    }
   }
 
   function getPostureScore(shoulderDeviation, earDeviation) {
-    const angleWeightFactor = 4.0; // 3 angles of deviation counts as 1 point less.
     let shoulderScoreOffset = hipShoulderWeight * (shoulderDeviation / angleWeightFactor);
     let earScoreOffset = shoulderEarWeight * (earDeviation / angleWeightFactor);
-    //let score =  Math.round(10 - (shoulderScoreOffset + earScoreOffset)); // Score out of 10.
     let score =  (10.0 - (shoulderScoreOffset + earScoreOffset)); // Score out of 10.
     return score < 0 ? 0 : score;
   }
@@ -300,9 +298,13 @@ export default function App() {
           />{' '}
           Perfect Posture
           {' '}
-          <Popup 
-            trigger={<button size="sm" align="right">Help</button>} 
-            position="bottom left">
+        </Navbar.Brand>
+        <Nav className="mr-auto">
+        </Nav>
+        <Nav>
+          <Popup
+            trigger={<button size="sm" align="right">Help</button>}
+            position="bottom right">
               <h5> HOW TO TAKE PIC</h5>
               <p> Welcome to Perfect Posture. To get the best analysis, please submit a seated side view picture with as little obstruction as possible.</p>
               <p>You can follow the example below for optimal results.</p>
@@ -320,7 +322,7 @@ export default function App() {
               <p>2) If your head tilt is greater than ~10° then push head back.</p>
               <p>3) If your shoulder tilt is greater than ~10° then push shoulders back.</p>
           </Popup>
-        </Navbar.Brand>
+        </Nav>
       </Navbar>
       <div className="body">
         <div className="upload">
