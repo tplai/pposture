@@ -157,7 +157,7 @@ export default function App() {
         analyzePosture();
       })
     }
-  }, [picture, imgHeight, imgWidth]);
+  }, [picture, imgHeight, imgWidth, analyzePosture, goodImageQuality]);
 
   let rightScore = 0;
   let leftScore = 0;
@@ -355,13 +355,9 @@ export default function App() {
               <div>{ headTilt } </div>
               <div>{ backTilt } </div>
             </div>
-          : null
-          }
-          {!isValidImg ?
-            <div >
+          : <div>
               Cannot estimate your posture from this image, try takin a better picture or click the 'Help' button above.
             </div>
-            : null
           }
         </div>
     </div>
