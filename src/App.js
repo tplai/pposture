@@ -202,7 +202,7 @@ export default function App() {
     let yKneeVec = kneeCordinates[1] - yOrigin;
     let xShoulderVec = shoulderCoordinates[0] - xOrigin;
     let yShoulderVec = shoulderCoordinates[1] - yOrigin;
-    return Math.atan((xKneeVec-xShoulderVec)/(yKneeVec-yShoulderVec));
+    return Math.abs((Math.atan2(yShoulderVec, xShoulderVec) - Math.atan2(yKneeVec, xKneeVec)) * 180 / Math.PI);
   }
 
   function getShoulderEarAngle() {
@@ -212,7 +212,7 @@ export default function App() {
     let yEarVec = earCoordinates[1] - yOrigin;
     let xShoulderVec = hipCordinates[0] - xOrigin;
     let yShoulderVec = hipCordinates[1] - yOrigin;
-    return Math.atan((xEarVec-xShoulderVec)/(yEarVec-yShoulderVec));
+    return Math.abs((Math.atan2(yEarVec, xEarVec) - Math.atan2(yShoulderVec, xShoulderVec)) * 180 / Math.PI);
   }
 
   function analyzePosture() {
@@ -221,6 +221,9 @@ export default function App() {
     determineImgSide();
     let hipShoulderAngle = getHipShoulderAngle();
     let shoulderEarAngle = getShoulderEarAngle();
+
+    console.log("hipshouder angle: " + hipShoulderAngle);
+    console.log("earshoulder angle: " + shoulderEarAngle);
 
     // Shoulder to hip analysis.
     let shoulderAngleDeviation = Math.abs(expectedShoulderAngle - hipShoulderAngle);
