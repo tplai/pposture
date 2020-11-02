@@ -17,8 +17,6 @@ const confidence = 0.8;
 
 const angleWeightFactor = 4.0; // 4 angles of deviation counts as 1 point less.
 
-const canvasHeight = 500;
-
 const rightside = [2, 4, 6, 8, 10, 12, 14, 16];
 const leftside = [1, 3, 5, 7, 9, 11, 13, 15];
 
@@ -57,8 +55,6 @@ export default function App() {
 
   const [imgWidth, setImgWidth] = useState(-1);
   const [imgHeight, setImgHeight] = useState(-1);
-  const [canvasWidth, setCanvasWidth] = useState(0);
-  const [canvasHeight, setCanvasHeight] = useState(0);
   const [picture, setPicture] = useState();
   const [isValidImg, setIsValidImg] = useState(true);
   const [isRightSide, setRightSide] = useState(false);
