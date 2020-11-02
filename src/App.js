@@ -196,13 +196,17 @@ export default function App() {
   }
 
   function getHipShoulderAngle() {
-    let xOrigin = hipCordinates[0];
-    let yOrigin = hipCordinates[1];
-    let xKneeVec = kneeCordinates[0] - xOrigin;
-    let yKneeVec = kneeCordinates[1] - yOrigin;
-    let xShoulderVec = shoulderCoordinates[0] - xOrigin;
-    let yShoulderVec = shoulderCoordinates[1] - yOrigin;
-    return Math.abs((Math.atan2(yShoulderVec, xShoulderVec) - Math.atan2(yKneeVec, xKneeVec)) * 180 / Math.PI);
+    // let xOrigin = hipCordinates[0];
+    // let yOrigin = hipCordinates[1];
+    //let xKneeVec = kneeCordinates[0] - xOrigin;
+    //let yKneeVec = kneeCordinates[1] - yOrigin;
+    let xYaxisVec = hipCordinates[0];
+    let yYaxisVec = 0; // Arbitrary 10 value just to go straight up
+    let xShoulderVec = shoulderCoordinates[0] - hipCordinates[0];
+    let yShoulderVec = hipCordinates[1] - shoulderCoordinates[1];
+    console.log(`yAXIS vec: (${xYaxisVec}, ${yYaxisVec})`);
+    console.log(`shoulder vec: (${xShoulderVec}, ${yShoulderVec})`);
+    return Math.abs((Math.atan2(yShoulderVec, xShoulderVec) - Math.atan2(yYaxisVec, xYaxisVec)) * 180 / Math.PI);
   }
 
   function getShoulderEarAngle() {
@@ -210,14 +214,16 @@ export default function App() {
     let yOrigin = shoulderCoordinates[1];
     let xEarVec = earCoordinates[0] - xOrigin;
     let yEarVec = earCoordinates[1] - yOrigin;
-    let xShoulderVec = hipCordinates[0] - xOrigin;
-    let yShoulderVec = hipCordinates[1] - yOrigin;
-    return Math.abs((Math.atan2(yEarVec, xEarVec) - Math.atan2(yShoulderVec, xShoulderVec)) * 180 / Math.PI);
+    //let xShoulderVec = hipCordinates[0] - xOrigin;
+    //let yShoulderVec = hipCordinates[1] - yOrigin;
+    let xYaxisVec = xOrigin;
+    let yYaxisVec = yOrigin - 10; // Arbitrary 10 value just to go straight up
+    return Math.abs((Math.atan2(yEarVec, xEarVec) - Math.atan2(yYaxisVec, xYaxisVec)) * 180 / Math.PI);
   }
 
   function analyzePosture() {
-    const expectedShoulderAngle = 90;
-    const expectedEarAngle = 180;
+    const expectedShoulderAngle = 0;
+    const expectedEarAngle = 0;
     determineImgSide();
     let hipShoulderAngle = getHipShoulderAngle();
     let shoulderEarAngle = getShoulderEarAngle();
