@@ -60,6 +60,7 @@ export default function App() {
   const [canvasWidth, setCanvasWidth] = useState(0);
   const [canvasHeight, setCanvasHeight] = useState(0);
   const [picture, setPicture] = useState();
+  const [validImg, setValidImg] = useState(true);
   const [isRightSide, setRightSide] = useState(false);
   const [avgPosture, setAvgPosture] = useState("");
   const [insights, setInsights] = useState("");
@@ -84,10 +85,12 @@ export default function App() {
       pose.then((res) => {
         let keypoints = res.keypoints;
         if (!goodImageQuality(keypoints)) {
-          validImg = false;
+          setValidImg(false);
+          setImgWidth(0);
+          setImgHeight(0);
           return;
         }
-        validImg = true;
+        setValidImg(true);
         setImgWidth(imgref.current.naturalWidth);
         setImgHeight(imgref.current.naturalHeight);
 
@@ -159,8 +162,6 @@ export default function App() {
       })
     }
   }, [picture, imgHeight, imgWidth]);
-
-  let validImg = false;
 
   let rightScore = 0;
   let leftScore = 0;
