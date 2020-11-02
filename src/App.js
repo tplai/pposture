@@ -73,17 +73,18 @@ export default function App() {
 
   useEffect(() => {
     if (picture) {
-      setImgWidth(imgref.current.naturalWidth);
-      setImgHeight(imgref.current.naturalHeight);
       // console.log(pictures);
       const pose = estimatePoseOnImage(imgref.current);
       // console.log(pose);
       pose.then((res) => {
         let keypoints = res.keypoints;
         if (!goodImageQuality(keypoints)) {
-          displayImageError();
+          validImg = false;
           return;
         }
+        validImg = true;
+        setImgWidth(imgref.current.naturalWidth);
+        setImgHeight(imgref.current.naturalHeight);
 
         let ctx = canvasref.current.getContext('2d');
         let scale = 1; // get the min scale to fit
@@ -148,6 +149,8 @@ export default function App() {
       })
     }
   }, [picture, imgHeight, imgWidth]);
+
+  let validImg = false;
 
   let rightScore = 0;
   let leftScore = 0;
@@ -272,6 +275,7 @@ export default function App() {
     setScore(postureScore.toFixed(2)+"/10");
     setHeadTilt("Neck Tilt: " + shoulderEarAngle.toFixed(2) + "°");
     setBackTilt("Back Straightness: " + hipShoulderAngle.toFixed(2) + "°");
+    validImg = true;
   }
 
   function getPostureScore(shoulderDeviation, earDeviation) {
@@ -330,16 +334,18 @@ export default function App() {
           <img src={picture} alt="upload" style={{display: 'none'}} ref={imgref}/>
           <canvas width={imgWidth} height={imgHeight} ref={canvasref} />
           <br></br>
-          <div className="insights-text">
-            <div><b>{ avgPosture }</b></div>
-            <div><b>{ score }</b></div>
-            <div>{ insights } </div>
-            <div>{ headTilt } </div>
-            <div>{ backTilt } </div>
-          </div>
-          <div>
-            Cannot estimate your posture from this image, try takin a better picture or click the 'Help' button above.
-          </div>
+          {validImg ?
+            <div className="insights-text">
+              <div><b>{ avgPosture }</b></div>
+              <div><b>{ score }</b></div>
+              <div>{ insights } </div>
+              <div>{ headTilt } </div>
+              <div>{ backTilt } </div>
+            </div>
+          : <div >
+              Cannot estimate your posture from this image, try takin a better picture or click the 'Help' button above.
+            </div>
+          }
         </div>
     </div>
     </div>
