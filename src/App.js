@@ -14,6 +14,8 @@ require('@tensorflow/tfjs-backend-webgl');
 
 const confidence = 0.8;
 
+const canvasHeight = 500;
+
 const rightside = [2, 4, 6, 8, 10, 12, 14, 16];
 const leftside = [1, 3, 5, 7, 9, 11, 13, 15];
 
@@ -52,6 +54,8 @@ export default function App() {
 
   const [imgWidth, setImgWidth] = useState(-1);
   const [imgHeight, setImgHeight] = useState(-1);
+  const [canvasWidth, setCanvasWidth] = useState(0);
+  const [canvasHeight, setCanvasHeight] = useState(0);
   const [picture, setPicture] = useState();
   const [avgPosture, setAvgPosture] = useState("");
   const [insights, setInsights] = useState("");
@@ -84,7 +88,12 @@ export default function App() {
         //console.log(imgref.current);
 
         let ctx = canvasref.current.getContext('2d');
-        let scale = 1; // get the min scale to fit
+        let scale = 1;
+        // let scale = 1.0 * imgHeight / canvasHeight; // get the min scale to fit
+        // let aspect = 1.0 * imgWidth / imgHeight;
+        // console.log(aspect);
+        // setCanvasHeight(500);
+        // setCanvasWidth(canvasHeight * aspect);
         let x = (ctx.canvas.width - (imgWidth * scale) ) / 2; // centre x
         let y = (ctx.canvas.height - (imgHeight * scale) ) / 2; // centre y
         // ctx.drawImage(imgref.current)
@@ -212,8 +221,8 @@ export default function App() {
     let yYaxisVec = 1; // Arbitrary 1 value just to go straight up
     let xShoulderVec = shoulderCoordinates[0] - hipCordinates[0];
     let yShoulderVec = hipCordinates[1] - shoulderCoordinates[1];
-    console.log(`yAXIS vec: (${xYaxisVec}, ${yYaxisVec})`);
-    console.log(`shoulder vec: (${xShoulderVec}, ${yShoulderVec})`);
+    // console.log(`yAXIS vec: (${xYaxisVec}, ${yYaxisVec})`);
+    // console.log(`shoulder vec: (${xShoulderVec}, ${yShoulderVec})`);
     return Math.abs((Math.atan2(yShoulderVec, xShoulderVec) - Math.atan2(yYaxisVec, xYaxisVec)) * 180 / Math.PI);
   }
 
@@ -234,22 +243,22 @@ export default function App() {
     let hipShoulderAngle = getHipShoulderAngle();
     let shoulderEarAngle = getShoulderEarAngle();
 
-    console.log("hipshouder angle: " + hipShoulderAngle);
-    console.log("earshoulder angle: " + shoulderEarAngle);
+    // console.log("hipshouder angle: " + hipShoulderAngle);
+    // console.log("earshoulder angle: " + shoulderEarAngle);
 
     // Shoulder to hip analysis.
     let shoulderAngleDeviation = Math.abs(expectedShoulderAngle - hipShoulderAngle);
-    console.log("shoulder deiation is: " + shoulderAngleDeviation);
-    if (shoulderAngleDeviation > 6) { // If angle > 6 degrees of deviation, recommend insights..
-      console.log("push shoulders back");
-    }
+    // console.log("shoulder deiation is: " + shoulderAngleDeviation);
+    // if (shoulderAngleDeviation > 6) { // If angle > 6 degrees of deviation, recommend insights..
+    //   console.log("push shoulders back");
+    // }
 
     // Ear to shoulder analysis.
     let earAngleDeviation = Math.abs(expectedEarAngle - shoulderEarAngle);
-    console.log("ear angle deviation: "+ earAngleDeviation);
-    if (earAngleDeviation > 6) { // If angle > 6 degrees of deviation, recommend insights..
-      console.log("Push your neck back");
-    }
+    // console.log("ear angle deviation: "+ earAngleDeviation);
+    // if (earAngleDeviation > 6) { // If angle > 6 degrees of deviation, recommend insights..
+    //   console.log("Push your neck back");
+    // }
     // Evaluating perfect posture score.
     let postureScore = getPostureScore(shoulderAngleDeviation, earAngleDeviation);
     // console.log("posture score is: " + postureScore);
