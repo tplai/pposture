@@ -200,8 +200,8 @@ export default function App() {
     // let yOrigin = hipCordinates[1];
     //let xKneeVec = kneeCordinates[0] - xOrigin;
     //let yKneeVec = kneeCordinates[1] - yOrigin;
-    let xYaxisVec = hipCordinates[0];
-    let yYaxisVec = 0; // Arbitrary 10 value just to go straight up
+    let xYaxisVec = 0;
+    let yYaxisVec = 1; // Arbitrary 1 value just to go straight up
     let xShoulderVec = shoulderCoordinates[0] - hipCordinates[0];
     let yShoulderVec = hipCordinates[1] - shoulderCoordinates[1];
     console.log(`yAXIS vec: (${xYaxisVec}, ${yYaxisVec})`);
@@ -210,14 +210,12 @@ export default function App() {
   }
 
   function getShoulderEarAngle() {
-    let xOrigin = shoulderCoordinates[0];
-    let yOrigin = shoulderCoordinates[1];
-    let xEarVec = earCoordinates[0] - xOrigin;
-    let yEarVec = earCoordinates[1] - yOrigin;
+    let xEarVec = earCoordinates[0] - shoulderCoordinates[0];
+    let yEarVec = shoulderCoordinates[1] - earCoordinates[1];
     //let xShoulderVec = hipCordinates[0] - xOrigin;
     //let yShoulderVec = hipCordinates[1] - yOrigin;
-    let xYaxisVec = xOrigin;
-    let yYaxisVec = yOrigin - 10; // Arbitrary 10 value just to go straight up
+    let xYaxisVec = 0;
+    let yYaxisVec = 1; // Arbitrary 10 value just to go straight up
     return Math.abs((Math.atan2(yEarVec, xEarVec) - Math.atan2(yYaxisVec, xYaxisVec)) * 180 / Math.PI);
   }
 
@@ -250,10 +248,11 @@ export default function App() {
   }
 
   function getPostureScore(shoulderDeviation, earDeviation) {
-    const angleWeightFactor = 3; // 3 angles of deviation counts as 1 point less.
+    const angleWeightFactor = 4.0; // 3 angles of deviation counts as 1 point less.
     let shoulderScoreOffset = hipShoulderWeight * (shoulderDeviation / angleWeightFactor);
     let earScoreOffset = shoulderEarWeight * (earDeviation / angleWeightFactor);
-    let score =  Math.round(10 - (shoulderScoreOffset + earScoreOffset)); // Score out of 10.
+    //let score =  Math.round(10 - (shoulderScoreOffset + earScoreOffset)); // Score out of 10.
+    let score =  (10.0 - (shoulderScoreOffset + earScoreOffset)); // Score out of 10.
     return score < 0 ? 0 : score;
   }
 
