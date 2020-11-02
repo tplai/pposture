@@ -30,7 +30,7 @@ const bodyCoordinates = {
   ear: {}, // Left, Right
   shoulder: {},
   hip: {},
-  knee: {} 
+  knee: {}
 };
 
 async function estimatePoseOnImage(imageElement) {
@@ -50,18 +50,23 @@ export default function App() {
   const [imgWidth, setImgWidth] = useState(-1);
   const [imgHeight, setImgHeight] = useState(-1);
   const [picture, setPicture] = useState();
+  const [avgPosture, setAvgPosture] = useState("");
+  const [insights, setInsights] = useState("");
+  const [score, setScore] = useState("");
+  const [headTilt, setHeadTilt] = useState();
+  const [backTilt, setBackTilt] = useState();
 
   const onDrop = picture => {
     // console.log(picture);
     // setPictures(picture);
     let reader = new FileReader();
     reader.onload = (e) => {
-      // console.log(e.target);
+
       setPicture(e.target.result);
-      // console.log(e.target);
     }
     reader.readAsDataURL(picture[0]);
   };
+
 
   useEffect(() => {
     if (picture) {
@@ -71,9 +76,9 @@ export default function App() {
       const pose = estimatePoseOnImage(imgref.current);
       // console.log(pose);
       pose.then((res) => {
-        console.log(res);
-        console.log(canvasref.current);
-        console.log(imgref.current);
+        //console.log(res);
+        //console.log(canvasref.current);
+        //console.log(imgref.current);
 
         let ctx = canvasref.current.getContext('2d');
         let scale = 1; // get the min scale to fit
@@ -85,7 +90,7 @@ export default function App() {
         for (let i = 0; i < res.keypoints.length; i++) {
           // A keypoint is an object describing a body part (like rightArm or leftShoulder)
           let keypoint = res.keypoints[i];
-          
+
           // Assign coordinates.
           let bodyPart = {};
           bodyPart.x = keypoint.position.x;
@@ -106,7 +111,7 @@ export default function App() {
             bodyCoordinates.knee.left = bodyPart;
           } else if (keypoint.part === "rightKnee") {
             bodyCoordinates.knee.right = bodyPart;
-          }          
+          }
 
           // draw lines
           // Only draw an ellipse is the pose probability is bigger than confidence
@@ -165,7 +170,7 @@ export default function App() {
   let earCoordinates = [];
 
   function goodImageQuality(leftConfidence, rightConfidence) {
-    const differenceMin = .2; 
+    const differenceMin = .2;
     const difference = Math.abs(leftConfidence - rightConfidence);
     return difference > differenceMin;
   }
@@ -244,7 +249,21 @@ export default function App() {
     }
     // Evaluating perfect posture score.
     let postureScore = getPostureScore(shoulderAngleDeviation, earAngleDeviation);
-    console.log("posture score is: " + postureScore);
+    // console.log("posture score is: " + postureScore);
+    // console.log(e.target);
+    if (postureScore >= 0 && postureScore < 5) {
+      setAvgPosture("Poor Posture")
+    }
+    else if (postureScore >= 5 && postureScore < 8) {
+      setAvgPosture("Average Posture")
+    }
+    else if (postureScore >= 8 && postureScore <= 10) {
+      setAvgPosture("Great Posture")
+    }
+    setInsights("Insights:");
+    setScore(postureScore.toFixed(2)+"/10");
+    setHeadTilt("Neck Tilt: " + shoulderEarAngle.toFixed(2) + "°");
+    setBackTilt("Back Straightness: " + hipShoulderAngle.toFixed(2) + "°");
   }
 
   function getPostureScore(shoulderDeviation, earDeviation) {
@@ -279,8 +298,14 @@ export default function App() {
             imgExtension={[".jpg", ".gif", ".png", ".gif"]}
             maxFileSize={5242880}
           />
-          <img src={picture} alt="upload" style={{display: 'none'}} ref={imgref} />
+          <img src={picture} alt="upload" style={{display: 'none'}} ref={imgref}/>
           <canvas width={imgWidth} height={imgHeight} ref={canvasref} />
+          <br></br>
+          <h2> { avgPosture } </h2>
+          <h3> { score } </h3>
+          <b>{ insights } </b>
+          <p>{ headTilt } </p>
+          <p>{ backTilt } </p>
         </div>
     </div>
     </div>
