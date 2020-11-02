@@ -1,7 +1,10 @@
 import logo from './logo.png';
+import examplePic from './PicExample.png';
 import React, { useEffect, useRef, useState, } from 'react';
 import ImageUploader from "react-images-upload";
 import Navbar from 'react-bootstrap/Navbar';
+import Popup from 'reactjs-popup';
+import 'reactjs-popup';
 import './index.css';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -287,6 +290,27 @@ export default function App() {
             className="d-inline-block align-top"
           />{' '}
           Perfect Posture
+          {' '}
+          <Popup 
+            trigger={<button size="sm" align="right">Help</button>} 
+            position="bottom left">
+              <h5> HOW TO TAKE PIC</h5>
+              <p> Welcome to Perfect Posture. To get the best analysis, please submit a seated side view picture with as little obstruction as possible.</p>
+              <p>You can follow the example below for optimal results.</p>
+              <img
+                alt=""
+                src={examplePic}
+                width="120"
+                height="176"
+                className="d-inline-block align-top"
+              />
+              <br></br>
+              <h5>ANALYSIS</h5>
+              <p>The following general guidelines can help you get a better sense of your score and insights.</p>
+              <p>1) (0-4) Really bad, (4-7) decent, (7-9) good, (9-10) fantastic.</p>
+              <p>2) If your head tilt is greater than ~10° then push head back.</p>
+              <p>3) If your shoulder tilt is greater than ~10° then push shoulders back.</p>
+          </Popup>
         </Navbar.Brand>
       </Navbar>
       <div className="body">
