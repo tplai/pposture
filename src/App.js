@@ -80,12 +80,12 @@ export default function App() {
       // console.log(pose);
       pose.then((res) => {
         let keypoints = res.keypoints;
-        if (!goodImageQuality(keypoints)) {
-          setIsValidImg(false);
-          setImgWidth(0);
-          setImgHeight(0);
-          return;
-        }
+        // if (!goodImageQuality(keypoints)) {
+        //   setIsValidImg(false);
+        //   setImgWidth(0);
+        //   setImgHeight(0);
+        //   return;
+        // }
         setIsValidImg(true);
         setImgWidth(imgref.current.naturalWidth);
         setImgHeight(imgref.current.naturalHeight);
@@ -157,7 +157,7 @@ export default function App() {
         analyzePosture();
       })
     }
-  }, [picture, imgHeight, imgWidth, analyzePosture, goodImageQuality]);
+  }, [picture, imgHeight, imgWidth]);
 
   let rightScore = 0;
   let leftScore = 0;
