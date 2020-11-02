@@ -159,10 +159,10 @@ export default function App() {
   let isRightSide = false;
 
   // Main parts coordinates.
-  let hipCordinates = [0,0]; // Origin coordinate.
-  let kneeCordinates = [0,0];
-  let shoulderCoordinates = [0,0];
-  let earCoordinates = [0,0];
+  let hipCordinates; // Origin coordinate.
+  let kneeCordinates;
+  let shoulderCoordinates;
+  let earCoordinates;
 
   function goodImageQuality(leftConfidence, rightConfidence) {
     const differenceMin = .2; 
