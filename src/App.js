@@ -325,11 +325,13 @@ export default function App() {
           <img src={picture} alt="upload" style={{display: 'none'}} ref={imgref}/>
           <canvas width={imgWidth} height={imgHeight} ref={canvasref} />
           <br></br>
-          <h2> { avgPosture } </h2>
-          <h3> { score } </h3>
-          <b>{ insights } </b>
-          <p>{ headTilt } </p>
-          <p>{ backTilt } </p>
+          <div className="insights-text">
+            <div><b>{ avgPosture }</b></div>
+            <div><b>{ score }</b></div>
+            <div>{ insights } </div>
+            <div>{ headTilt } </div>
+            <div>{ backTilt } </div>
+          </div>
         </div>
     </div>
     </div>
