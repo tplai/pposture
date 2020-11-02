@@ -159,10 +159,10 @@ export default function App() {
   let isRightSide = false;
 
   // Main parts coordinates.
-  let hipCordinates; // Origin coordinate.
-  let kneeCordinates;
-  let shoulderCoordinates;
-  let earCoordinates;
+  let hipCordinates = []; // Origin coordinate.
+  let kneeCordinates = [];
+  let shoulderCoordinates = [];
+  let earCoordinates = [];
 
   function goodImageQuality(leftConfidence, rightConfidence) {
     const differenceMin = .2; 
@@ -224,17 +224,20 @@ export default function App() {
 
     // Shoulder to hip analysis.
     let shoulderAngleDeviation = Math.abs(expectedShoulderAngle - hipShoulderAngle);
+    console.log("shoulder deiation is: " + shoulderAngleDeviation);
     if (shoulderAngleDeviation > 6) { // If angle > 6 degrees of deviation, recommend insights..
       console.log("push shoulders back");
     }
 
     // Ear to shoulder analysis.
     let earAngleDeviation = Math.abs(expectedEarAngle - shoulderEarAngle);
+    console.log("ear angle deviation: "+ earAngleDeviation);
     if (earAngleDeviation > 6) { // If angle > 6 degrees of deviation, recommend insights..
       console.log("Push your neck back");
     }
     // Evaluating perfect posture score.
-    let postureScore = getPostureScore();
+    let postureScore = getPostureScore(shoulderAngleDeviation, earAngleDeviation);
+    console.log("posture score is: " + postureScore);
   }
 
   function getPostureScore(shoulderDeviation, earDeviation) {
