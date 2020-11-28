@@ -152,8 +152,9 @@ class App extends React.Component {
       // setCanvasHeight(500);
       // setCanvasWidth(canvasHeight * aspect);
       let x = (ctx.canvas.width - (this.state.imgWidth * scale) ) / 2; // centre x
-      let y = (ctx.canvas.height - (this.stateimgHeight * scale) ) / 2; // centre y
+      let y = (ctx.canvas.height - (this.state.imgHeight * scale) ) / 2; // centre y
       // ctx.drawImage(imgref.current)
+      console.log(this.imgref.current);
       ctx.drawImage(this.imgref.current, x, y, this.state.imgWidth * scale, this.state.imgHeight * scale); // draw scaled img onto the canvas.
       // loop through keypoints
       for (let i = 0; i < keypoints.length; i++) {
@@ -420,8 +421,7 @@ class App extends React.Component {
                 imgExtension={[".jpg", ".gif", ".png", ".gif"]}
                 maxFileSize={5242880}
                 />
-              // <img src={picture} alt="upload" style={{display: 'none'}} ref={this.imgref}/>
-              <img src={picture} alt="upload" ref={this.imgref}/>
+              <img src={picture} alt="upload" style={{display: 'none'}} ref={this.imgref}/>
               <canvas width={imgWidth} height={imgHeight} ref={this.canvasref} />
               <br></br>
               {isValidImg ?
