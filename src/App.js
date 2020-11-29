@@ -5,6 +5,9 @@ import ImageUploader from "react-images-upload";
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Popup from 'reactjs-popup';
+import Spinner from 'react-spinner-material';
+//import "react-loader-spinner/dist/loader/css/react-spinner-loader.css"
+import Loader from 'react-loader-spinner'
 import 'reactjs-popup';
 import './index.css';
 import './App.css';
@@ -77,6 +80,8 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      displayHomepage: true,
+      loading: false,
       imgWidth: -1,
       imgHeight: -1,
       picture: -1,
@@ -98,10 +103,11 @@ class App extends React.Component {
 
     this.onDrop = this.onDrop.bind(this);
     this.drawPose = this.drawPose.bind(this);
-    this.checkImageQuality = this.checkImageQuality.bind(this);
+    this.verifyImageQuality = this.verifyImageQuality.bind(this);
     this.displayImageError = this.displayImageError.bind(this);
     this.determineImageSide = this.determineImageSide.bind(this);
     this.analyzePosture = this.analyzePosture.bind(this);
+    this.displayHomepage = this.displayHomepage.bind(this);
   }
 
   onDrop(picture) {
@@ -119,22 +125,23 @@ class App extends React.Component {
 
   drawPose() {
     // begin pose estimation
+    this.setState({
+      loading: true,
+      displayHomepage: false
+    });
+    this.clearPage();
     const pose = estimatePoseOnImage(this.imgref.current);
-    // console.log(pose);
     pose.then((res) => {
       let keypoints = res.keypoints;
-      this.checkImageQuality(keypoints);
-      if (!this.state.isValidImg) {
-        this.setState(prevState => ({
-          ...prevState,
-          imgWidth: 0,
-          imgHeight: 0,
-          })
-        );
+
+      if (!this.verifyImageQuality(keypoints)) {
+        this.displayImageError();
         return;
       }
+
       this.setState(prevState => ({
         ...prevState,
+        loading: false,
         isValidImg: true,
         imgWidth: this.imgref.current.naturalWidth,
         imgHeight: this.imgref.current.naturalHeight,
@@ -213,7 +220,7 @@ class App extends React.Component {
     })
   }
 
-  checkImageQuality(keypoints) {
+  verifyImageQuality(keypoints) {
     let rightScore = 0;
     let leftScore = 0;
 
@@ -244,11 +251,33 @@ class App extends React.Component {
       isValidImg: valid
       })
     );
+    return valid;
+  }
+
+  displayHomepage() {
+    this.setState({
+      displayHomepage: true,
+    });
+    this.clearPage();
+  }
+
+  clearPage() {
+    this.setState({
+      isValidImg: true,
+      avgPosture: null,
+      score: null,
+      insights: null,
+      headTilt: null,
+      backTilt: null,
+      imgHeight: 0,
+      imgWidth: 0,
+    });
   }
 
   displayImageError() {
     this.setState(prevState => ({
       ...prevState,
+      loading: false,
       imgHeight: 0,
       imgWidth: 0,
       })
@@ -358,6 +387,8 @@ class App extends React.Component {
 
   render() {
     const {
+      displayHomepage,
+      loading,
       picture,
       imgWidth,
       imgHeight,
@@ -372,7 +403,7 @@ class App extends React.Component {
     return (
       <div className="App">
         <Navbar bg="dark" variant="dark">
-          <Navbar.Brand href="#home">
+          <Navbar.Brand href="#home" onClick={this.displayHomepage}>
             <img
               alt=""
               src={logo}
@@ -387,28 +418,14 @@ class App extends React.Component {
             </Nav>
             <Nav>
               <Popup
+                className="popup-content"
                 trigger={<button size="sm" align="right">Help</button>}
                 position="bottom right">
-                <h5> HOW TO TAKE PIC</h5>
-                <p> Welcome to Perfect Posture. To get the best analysis, please submit a seated side view picture with as little obstruction as possible.</p>
-                <p>You can follow the example below for optimal results.</p>
-                <img
-                  alt=""
-                  src={examplePic}
-                  width="120"
-                  height="176"
-                  className="d-inline-block align-top"
-                  />
-                <br></br>
-                <br></br>
-                <h5>ALGORITHM</h5>
-                <p>Our scoring system takes into consideration your neck, shoulder, and hip position. We calculate how straight your back and neck are to give you the best feedback to improve your posture.</p>
-                <br></br>
-                <h5>ANALYSIS</h5>
-                <p>The following general guidelines can help you get a better sense of your score and insights.</p>
-                <p>1) (0-4) Really bad, (4-7) decent, (7-9) good, (9-10) fantastic.</p>
-                <p>2) If your head tilt is greater than ~10° then push head back.</p>
-                <p>3) If your shoulder tilt is greater than ~10° then push shoulders back.</p>
+                <h5> Our Model</h5>
+                <p>We use computer vision to analyzer an image of your posture.
+                  Some of the metrics that go into our analysis include
+                  examing your back, neck, and shoulder positionings.
+                </p>
               </Popup>
             </Nav>
           </Navbar>
@@ -418,12 +435,31 @@ class App extends React.Component {
                 withIcon={true}
                 singleImage={true}
                 onChange={this.onDrop}
-                imgExtension={[".jpg", ".gif", ".png", ".gif"]}
+                imgExtension={[".jpg", ".png", ".gif"]}
                 maxFileSize={5242880}
-                />
+              />
+              {displayHomepage ?
+                <div className="homepage-info">
+                  <span>Welcome to Perfect Posture! To get the best analysis, submit a seated side view picture with as little
+                  obstruction as possible . Relax and show us your natural pose!
+                  </span>
+                  <div className="space"></div>
+                  <p>Follow the example below for best results</p>
+                  <img
+                    alt=""
+                    src={examplePic}
+                    width="240"
+                    height="352"
+                    className="d-inline-block align-top"
+                    />
+                </div>:null
+              }
               <img src={picture} alt="upload" style={{display: 'none'}} ref={this.imgref}/>
               <canvas width={imgWidth} height={imgHeight} ref={this.canvasref} />
-              <br></br>
+              {loading ?
+                <Loader className="loader-pos"type="TailSpin" color="#00BFFF" height={160} width={160} />
+                : null
+              }
               {isValidImg ?
                 <div className="insights-text">
                   <div><b>{ avgPosture }</b></div>
@@ -432,10 +468,9 @@ class App extends React.Component {
                   <div>{ headTilt } </div>
                   <div>{ backTilt } </div>
                 </div>
-                : <div>
-                Cannot estimate your posture from this image, try takin a better picture or click the 'Help' button above.
-              </div>
-            }
+                : <div>Cannot estimate your posture from this image, try takin a better side view picture and make sure the view is not obstructed</div>
+              }
+              
           </div>
         </div>
       </div>
@@ -445,3 +480,16 @@ class App extends React.Component {
 
 
 export default App
+
+/*
+<br></br>
+                <br></br>
+                <h5>ALGORITHM</h5>
+                <p>Our scoring system takes into consideration your neck, shoulder, and hip position. We calculate how straight your back and neck are to give you the best feedback to improve your posture.</p>
+                <br></br>
+                <h5>ANALYSIS</h5>
+                <p>The following general guidelines can help you get a better sense of your score and insights.</p>
+                <p>1) (0-4) Really bad, (4-7) decent, (7-9) good, (9-10) fantastic.</p>
+                <p>2) If your head tilt is greater than ~10° then push head back.</p>
+                <p>3) If your shoulder tilt is greater than ~10° then push shoulders back.</p>
+                */
