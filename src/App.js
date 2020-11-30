@@ -419,7 +419,7 @@ class App extends React.Component {
             <Nav>
               <Popup
                 className="popup-content"
-                trigger={<button size="sm" align="right">Help</button>}
+                trigger={<button size="sm" align="right">About Us</button>}
                 position="bottom right">
                 <h5> Our Model</h5>
                 <p>We use computer vision to analyzer an image of your posture.
@@ -441,7 +441,7 @@ class App extends React.Component {
               {displayHomepage ?
                 <div className="homepage-info">
                   <span>Welcome to Perfect Posture! To get the best analysis, submit a seated side view picture with as little
-                  obstruction as possible . Relax and show us your natural pose!
+                  obstruction as possible. Relax and show us your natural pose!
                   </span>
                   <div className="space"></div>
                   <p>Follow the example below for best results</p>
