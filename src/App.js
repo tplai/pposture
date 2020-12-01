@@ -17,6 +17,7 @@ const posenet = require('@tensorflow-models/posenet');
 require('@tensorflow/tfjs-backend-webgl');
 
 const confidence = 0.8;
+const scaledHeight = 600;
 
 // minimum difference between avg confidence scores between sides
 const differenceMin = .2;
@@ -101,6 +102,7 @@ class App extends React.Component {
     this.imgref = React.createRef();
     this.canvasref = React.createRef();
 
+    this.clearPage = this.clearPage.bind(this);
     this.onDrop = this.onDrop.bind(this);
     this.drawPose = this.drawPose.bind(this);
     this.verifyImageQuality = this.verifyImageQuality.bind(this);
@@ -125,10 +127,12 @@ class App extends React.Component {
 
   drawPose() {
     // begin pose estimation
-    this.setState({
+    this.setState(prevState => ({
+      ...prevState,
       loading: true,
-      displayHomepage: false
-    });
+      displayHomepage: false,
+      })
+    );
     this.clearPage();
     const pose = estimatePoseOnImage(this.imgref.current);
     pose.then((res) => {
@@ -139,30 +143,32 @@ class App extends React.Component {
         return;
       }
 
+      // let aspectRatio = this.imgref.current.naturalHeight / this.imgref.current.naturalWidth;
+      let yScale = 1.0 * scaledHeight /  this.imgref.current.naturalHeight;
+      let xScale = yScale;
+
+      console.log(this.imgref.current.naturalWidth);
+      console.log(xScale);
+      console.log(Math.round(this.imgref.current.naturalWidth * xScale));
+      console.log(yScale);
+      // yScale = 1;
+      // xScale = 1;
+
       this.setState(prevState => ({
         ...prevState,
         loading: false,
         isValidImg: true,
-        imgWidth: this.imgref.current.naturalWidth,
-        imgHeight: this.imgref.current.naturalHeight,
+        imgWidth: Math.round(this.imgref.current.naturalWidth * xScale),
+        imgHeight: Math.round(this.imgref.current.naturalHeight * yScale),
         })
       );
-      // setIsValidImg(true);
-      // setImgWidth(imgref.current.naturalWidth);
-      // setImgHeight(imgref.current.naturalHeight);
 
       let ctx = this.canvasref.current.getContext('2d');
-      let scale = 1;
-      // let scale = 1.0 * imgHeight / canvasHeight; // get the min scale to fit
-      // let aspect = 1.0 * imgWidth / imgHeight;
-      // console.log(aspect);
-      // setCanvasHeight(500);
-      // setCanvasWidth(canvasHeight * aspect);
-      let x = (ctx.canvas.width - (this.state.imgWidth * scale) ) / 2; // centre x
-      let y = (ctx.canvas.height - (this.state.imgHeight * scale) ) / 2; // centre y
+      let x = (ctx.canvas.width - (this.state.imgWidth) ) / 2; // centre x
+      let y = (ctx.canvas.height - (this.state.imgHeight) ) / 2; // centre y
       // ctx.drawImage(imgref.current)
-      console.log(this.imgref.current);
-      ctx.drawImage(this.imgref.current, x, y, this.state.imgWidth * scale, this.state.imgHeight * scale); // draw scaled img onto the canvas.
+      // console.log(this.imgref.current);
+      ctx.drawImage(this.imgref.current, x, y, this.state.imgWidth, this.state.imgHeight); // draw scaled img onto the canvas.
       // loop through keypoints
       for (let i = 0; i < keypoints.length; i++) {
         // A keypoint is an object describing a body part (like rightArm or leftShoulder)
@@ -196,7 +202,7 @@ class App extends React.Component {
           // point
           ctx.fillStyle = "#00FFFF";
           ctx.beginPath();
-          ctx.arc(keypoint.position.x, keypoint.position.y, 4, 0, 2 * Math.PI, true);
+          ctx.arc(keypoint.position.x * xScale, keypoint.position.y * yScale, 4, 0, 2 * Math.PI, true);
           ctx.fill();
 
           // lines
@@ -205,8 +211,8 @@ class App extends React.Component {
               if (res.keypoints[keypointlines[i][con]].score > confidence) {
                 // console.log("draw line from " + i + " to " + keypointlines[i][con]);
                 ctx.beginPath();
-                ctx.moveTo(keypoint.position.x, keypoint.position.y);
-                ctx.lineTo(res.keypoints[keypointlines[i][con]].position.x, res.keypoints[keypointlines[i][con]].position.y);
+                ctx.moveTo(keypoint.position.x * xScale, keypoint.position.y * yScale);
+                ctx.lineTo(res.keypoints[keypointlines[i][con]].position.x * xScale, res.keypoints[keypointlines[i][con]].position.y * yScale);
 
                 ctx.lineWidth = 3;
                 ctx.strokeStyle = "#00FFFF";
@@ -264,11 +270,11 @@ class App extends React.Component {
   clearPage() {
     this.setState({
       isValidImg: true,
-      avgPosture: null,
-      score: null,
-      insights: null,
-      headTilt: null,
-      backTilt: null,
+      avgPosture: "",
+      score: "",
+      insights: "",
+      headTilt: "",
+      backTilt: "",
       imgHeight: 0,
       imgWidth: 0,
     });
@@ -454,7 +460,7 @@ class App extends React.Component {
                     />
                 </div>:null
               }
-              <img src={picture} alt="upload" style={{display: 'none'}} ref={this.imgref}/>
+              <img src={picture} alt="upload" style={{display: 'none', height: scaledHeight, width: 'auto'}} ref={this.imgref}/>
               <canvas width={imgWidth} height={imgHeight} ref={this.canvasref} />
               {loading ?
                 <Loader className="loader-pos"type="TailSpin" color="#00BFFF" height={160} width={160} />
@@ -470,7 +476,7 @@ class App extends React.Component {
                 </div>
                 : <div>Cannot estimate your posture from this image, try takin a better side view picture and make sure the view is not obstructed</div>
               }
-              
+
           </div>
         </div>
       </div>
