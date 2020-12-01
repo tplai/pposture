@@ -5,18 +5,15 @@ import ImageUploader from "react-images-upload";
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Popup from 'reactjs-popup';
-import Spinner from 'react-spinner-material';
-//import "react-loader-spinner/dist/loader/css/react-spinner-loader.css"
 import Loader from 'react-loader-spinner'
 import 'reactjs-popup';
 import './index.css';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-// import posenet from '@tensorflow-models/posenet';
+
 const posenet = require('@tensorflow-models/posenet');
 require('@tensorflow/tfjs-backend-webgl');
 
-const confidence = 0.8;
 const scaledHeight = 600;
 
 // minimum difference between avg confidence scores between sides
@@ -38,11 +35,11 @@ const leftside = [1, 3, 5, 7, 9, 11, 13, 15];
 
 // dictionary for lines
 const keypointlines = {
-  5: [6, 7, 11],   // left shoulder to right shoulder, left elbow, Left hip
-  6: [8, 12],      // right shoulder to right elbow, right hip
+  5: [3, 7, 11],   // left shoulder to left elbow, left hip
+  6: [4, 8, 12],   // right shoulder to right elbow, right hip
   7: [9],          // left elbow to left wrist
   8: [10],         // right eblow to right wrist
-  11: [12, 13],    // left hip to right hip, left knee
+  11: [13],        // left hip to  left knee
   12: [14],        // right hip to right knee
   13: [15],        // left knee to left ankle
   14: [16],        // right knee to right ankle
@@ -89,7 +86,6 @@ class App extends React.Component {
       isValidImg: true,
       isRightSide: false,
       score: "",
-      insights: "",
       avgPosture: "",
       headTilt: "",
       backTilt: "",
@@ -104,11 +100,11 @@ class App extends React.Component {
 
     this.clearPage = this.clearPage.bind(this);
     this.onDrop = this.onDrop.bind(this);
-    this.drawPose = this.drawPose.bind(this);
-    this.verifyImageQuality = this.verifyImageQuality.bind(this);
-    this.displayImageError = this.displayImageError.bind(this);
-    this.determineImageSide = this.determineImageSide.bind(this);
     this.analyzePosture = this.analyzePosture.bind(this);
+    this.verifyImageQualityAndSide = this.verifyImageQualityAndSide.bind(this);
+    this.displayImageError = this.displayImageError.bind(this);
+    this.assignCorrespondingSideCoordinates = this.assignCorrespondingSideCoordinates.bind(this);
+    this.getPostureInsights = this.getPostureInsights.bind(this);
     this.displayHomepage = this.displayHomepage.bind(this);
   }
 
@@ -122,10 +118,10 @@ class App extends React.Component {
       );
     }
     reader.readAsDataURL(picture[0]);
-    this.drawPose();
+    this.analyzePosture();
   };
 
-  drawPose() {
+  analyzePosture() {
     // begin pose estimation
     this.setState(prevState => ({
       ...prevState,
@@ -138,95 +134,89 @@ class App extends React.Component {
     pose.then((res) => {
       let keypoints = res.keypoints;
 
-      if (!this.verifyImageQuality(keypoints)) {
+      if (!this.verifyImageQualityAndSide(keypoints)) {
         this.displayImageError();
         return;
       }
-
-      // let aspectRatio = this.imgref.current.naturalHeight / this.imgref.current.naturalWidth;
-      let yScale = 1.0 * scaledHeight /  this.imgref.current.naturalHeight;
-      let xScale = yScale;
-
-      console.log(this.imgref.current.naturalWidth);
-      console.log(xScale);
-      console.log(Math.round(this.imgref.current.naturalWidth * xScale));
-      console.log(yScale);
-      // yScale = 1;
-      // xScale = 1;
-
-      this.setState(prevState => ({
-        ...prevState,
-        loading: false,
-        isValidImg: true,
-        imgWidth: Math.round(this.imgref.current.naturalWidth * xScale),
-        imgHeight: Math.round(this.imgref.current.naturalHeight * yScale),
-        })
-      );
-
-      let ctx = this.canvasref.current.getContext('2d');
-      let x = (ctx.canvas.width - (this.state.imgWidth) ) / 2; // centre x
-      let y = (ctx.canvas.height - (this.state.imgHeight) ) / 2; // centre y
-      // ctx.drawImage(imgref.current)
-      // console.log(this.imgref.current);
-      ctx.drawImage(this.imgref.current, x, y, this.state.imgWidth, this.state.imgHeight); // draw scaled img onto the canvas.
-      // loop through keypoints
-      for (let i = 0; i < keypoints.length; i++) {
-        // A keypoint is an object describing a body part (like rightArm or leftShoulder)
-        let keypoint = keypoints[i];
-
-        // Assign coordinates.
-        let bodyPart = {};
-        bodyPart.x = keypoint.position.x;
-        bodyPart.y = keypoint.position.y;
-        if (keypoint.part === "leftEar") {
-          bodyCoordinates.ear.left = bodyPart;
-        } else if (keypoint.part === "rightEar") {
-          bodyCoordinates.ear.right = bodyPart;
-        } else if (keypoint.part === "leftShoulder") {
-          bodyCoordinates.shoulder.left = bodyPart;
-        } else if (keypoint.part === "rightShoulder") {
-          bodyCoordinates.shoulder.right = bodyPart;
-        } else if (keypoint.part === "leftHip") {
-          bodyCoordinates.hip.left = bodyPart;
-        } else if (keypoint.part === "rightHip") {
-          bodyCoordinates.hip.right = bodyPart;
-        } else if (keypoint.part === "leftKnee") {
-          bodyCoordinates.knee.left = bodyPart;
-        } else if (keypoint.part === "rightKnee") {
-          bodyCoordinates.knee.right = bodyPart;
-        }
-
-        // draw lines
-        // Only draw an ellipse is the pose probability is bigger than confidence
-        if (keypoint.score > confidence) {
-          // point
-          ctx.fillStyle = "#00FFFF";
-          ctx.beginPath();
-          ctx.arc(keypoint.position.x * xScale, keypoint.position.y * yScale, 4, 0, 2 * Math.PI, true);
-          ctx.fill();
-
-          // lines
-          if (i in keypointlines) {
-            for (let con in keypointlines[i]) {
-              if (res.keypoints[keypointlines[i][con]].score > confidence) {
-                // console.log("draw line from " + i + " to " + keypointlines[i][con]);
-                ctx.beginPath();
-                ctx.moveTo(keypoint.position.x * xScale, keypoint.position.y * yScale);
-                ctx.lineTo(res.keypoints[keypointlines[i][con]].position.x * xScale, res.keypoints[keypointlines[i][con]].position.y * yScale);
-
-                ctx.lineWidth = 3;
-                ctx.strokeStyle = "#00FFFF";
-                ctx.stroke();
-              }
-            }
-          }
-        }
-      }
-      this.analyzePosture();
+      this.assignBodyCoordinates(keypoints);
+      this.drawCanvas(keypoints);
+      this.getPostureInsights();
     })
   }
 
-  verifyImageQuality(keypoints) {
+  assignBodyCoordinates(keypoints) {
+    // Loop through keypoints
+    for (let i = 0; i < keypoints.length; i++) {
+      let keypoint = keypoints[i];
+      let bodyPart = {};
+      bodyPart.x = keypoint.position.x;
+      bodyPart.y = keypoint.position.y;
+      if (keypoint.part === "leftEar") {
+        bodyCoordinates.ear.left = bodyPart;
+      } else if (keypoint.part === "rightEar") {
+        bodyCoordinates.ear.right = bodyPart;
+      } else if (keypoint.part === "leftShoulder") {
+        bodyCoordinates.shoulder.left = bodyPart;
+      } else if (keypoint.part === "rightShoulder") {
+        bodyCoordinates.shoulder.right = bodyPart;
+      } else if (keypoint.part === "leftHip") {
+        bodyCoordinates.hip.left = bodyPart;
+      } else if (keypoint.part === "rightHip") {
+        bodyCoordinates.hip.right = bodyPart;
+      } else if (keypoint.part === "leftKnee") {
+        bodyCoordinates.knee.left = bodyPart;
+      } else if (keypoint.part === "rightKnee") {
+        bodyCoordinates.knee.right = bodyPart;
+      }
+    }
+  }
+
+  drawCanvas(keypoints) {
+    let yScale = 1.0 * scaledHeight /  this.imgref.current.naturalHeight;
+    let xScale = yScale;
+
+    this.setState(prevState => ({
+      ...prevState,
+      loading: false,
+      isValidImg: true,
+      imgWidth: Math.round(this.imgref.current.naturalWidth * xScale),
+      imgHeight: Math.round(this.imgref.current.naturalHeight * yScale),
+      })
+    );
+
+    let rightSide = this.state.rightSide;
+
+    let ctx = this.canvasref.current.getContext('2d');
+    let x = (ctx.canvas.width - (this.state.imgWidth) ) / 2; // centre x
+    let y = (ctx.canvas.height - (this.state.imgHeight) ) / 2; // centre y
+    ctx.drawImage(this.imgref.current, x, y, this.state.imgWidth, this.state.imgHeight); // draw scaled img onto the canvas.
+    for (let i = 0; i < keypoints.length; i++) { // loop through keypoints
+      let keypoint = keypoints[i]; // A keypoint is an object describing a body part (like rightArm or leftShoulder)
+
+      if ((!rightSide && leftside.includes(i)) || (rightSide && rightside.includes(i))) {
+        // point
+        ctx.fillStyle = "#00FFFF";
+        ctx.beginPath();
+        ctx.arc(keypoint.position.x * xScale, keypoint.position.y * yScale, 4, 0, 2 * Math.PI, true);
+        ctx.fill();
+
+        // lines
+        if (i in keypointlines) {
+          for (let con in keypointlines[i]) {
+           ctx.beginPath();
+           ctx.moveTo(keypoint.position.x * xScale, keypoint.position.y * yScale);
+           ctx.lineTo(keypoints[keypointlines[i][con]].position.x * xScale, keypoints[keypointlines[i][con]].position.y * yScale);
+
+           ctx.lineWidth = 3;
+           ctx.strokeStyle = "#00FFFF";
+           ctx.stroke();
+          }
+        }
+      }
+    }
+  }
+
+  verifyImageQualityAndSide(keypoints) {
     let rightScore = 0;
     let leftScore = 0;
 
@@ -272,7 +262,6 @@ class App extends React.Component {
       isValidImg: true,
       avgPosture: "",
       score: "",
-      insights: "",
       headTilt: "",
       backTilt: "",
       imgHeight: 0,
@@ -290,7 +279,7 @@ class App extends React.Component {
     );
   }
 
-  determineImageSide() {
+  assignCorrespondingSideCoordinates() {
     let hipCoords = [];
     let kneeCoords = [];
     let shoulderCoords = [];
@@ -324,8 +313,8 @@ class App extends React.Component {
     );
   }
 
-  analyzePosture() {
-    this.determineImageSide();
+  getPostureInsights() {
+    this.assignCorrespondingSideCoordinates();
     let xShoulderVec = this.state.shoulderCoordinates[0] - this.state.hipCordinates[0];
     let yShoulderVec = this.state.hipCordinates[1] - this.state.shoulderCoordinates[1];
     let hipShoulderAngle = getVerticalAngle(xShoulderVec, yShoulderVec, 0, 1);
@@ -351,7 +340,7 @@ class App extends React.Component {
       postureStr = "Poor Posture";
     }
     else if (postureScore >= 5 && postureScore < 8) {
-      postureStr = "Average Posture";
+      postureStr = "Fair Posture";
     }
     else if (postureScore >= 8 && postureScore <= 10) {
       postureStr = "Great Posture";
@@ -381,8 +370,7 @@ class App extends React.Component {
 
     this.setState(prevState => ({
       ...prevState,
-      score: postureScore.toFixed(2)+"/10",
-      insights: "Insights:",
+      score: Math.round(postureScore)+"/10",
       avgPosture: postureStr,
       backTilt: backStr,
       headTilt: headStr,
@@ -401,7 +389,6 @@ class App extends React.Component {
       isValidImg,
       avgPosture,
       score,
-      insights,
       headTilt,
       backTilt
     } = this.state;
@@ -470,7 +457,6 @@ class App extends React.Component {
                 <div className="insights-text">
                   <div><b>{ avgPosture }</b></div>
                   <div><b>{ score }</b></div>
-                  <div>{ insights } </div>
                   <div>{ headTilt } </div>
                   <div>{ backTilt } </div>
                 </div>
@@ -484,18 +470,4 @@ class App extends React.Component {
   }
 }
 
-
 export default App
-
-/*
-<br></br>
-                <br></br>
-                <h5>ALGORITHM</h5>
-                <p>Our scoring system takes into consideration your neck, shoulder, and hip position. We calculate how straight your back and neck are to give you the best feedback to improve your posture.</p>
-                <br></br>
-                <h5>ANALYSIS</h5>
-                <p>The following general guidelines can help you get a better sense of your score and insights.</p>
-                <p>1) (0-4) Really bad, (4-7) decent, (7-9) good, (9-10) fantastic.</p>
-                <p>2) If your head tilt is greater than ~10° then push head back.</p>
-                <p>3) If your shoulder tilt is greater than ~10° then push shoulders back.</p>
-                */
