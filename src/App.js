@@ -415,7 +415,7 @@ class App extends React.Component {
                 trigger={<button size="sm" align="right">About Us</button>}
                 position="bottom right">
                 <h5> Our Model</h5>
-                <p>We use computer vision to analyzer an image of your posture.
+                <p>We use computer vision to analyze an image of your posture.
                   Some of the metrics that go into our analysis include
                   examing your back, neck, and shoulder positionings.
                 </p>
