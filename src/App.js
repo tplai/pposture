@@ -428,7 +428,7 @@ class App extends React.Component {
                 withIcon={true}
                 singleImage={true}
                 onChange={this.onDrop}
-                imgExtension={[".jpg", ".png", ".gif"]}
+                imgExtension={[".jpg", ".jpeg", ".png"]}
                 maxFileSize={5242880}
               />
               {displayHomepage ?
