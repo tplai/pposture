@@ -433,7 +433,7 @@ class App extends React.Component {
               />
               {displayHomepage ?
                 <div className="homepage-info">
-                  <span>Welcome to Perfect Posture! To get the best analysis, submit a seated side view picture with as little
+                  <span>Welcome to Perfect! To get the best analysis, submit a seated side view picture with as little
                   obstruction as possible. Relax and show us your natural pose!
                   </span>
                   <div className="space"></div>
