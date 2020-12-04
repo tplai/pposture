@@ -418,6 +418,7 @@ class App extends React.Component {
                 <p>We use computer vision to analyze an image of your posture.
                   Some of the metrics that go into our analysis include
                   examing your back, neck, and shoulder positionings.
+                  We do not store your images.
                 </p>
               </Popup>
             </Nav>
