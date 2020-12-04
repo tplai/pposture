@@ -437,7 +437,7 @@ class App extends React.Component {
                   obstruction as possible. Relax and show us your natural pose!
                   </span>
                   <div className="space"></div>
-                  <p>Follow the example below for best results</p>
+                  <p>Follow the example below for best results.</p>
                   <img
                     alt=""
                     src={examplePic}
