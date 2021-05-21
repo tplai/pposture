@@ -1,11 +1,10 @@
-import logo from './logo.png';
-import examplePic from './PicExample.png';
+import logo from './assets/logo.png';
+import examplePic from './assets/PicExample.png';
 import React from 'react';
 import ImageUploader from "react-images-upload";
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Popup from 'reactjs-popup';
-import Loader from 'react-loader-spinner'
 import 'reactjs-popup';
 import './index.css';
 import './App.css';
@@ -414,11 +413,11 @@ class App extends React.Component {
                 className="popup-content"
                 trigger={<button size="sm" align="right">About Us</button>}
                 position="bottom right">
-                <h5> Our Model</h5>
-                <p>We use computer vision to analyze an image of your posture.
-                  Some of the metrics that go into our analysis include
-                  examing your back, neck, and shoulder positionings.
-                  We do not store your images.
+                <h5>The Perfect Posture Model</h5>
+                <p>Perfect Posture uses computer vision to analyze an image of your sitting posture.
+                  We take some measurements from your body and crunch some numbers to give you insight on ways you can adjust your posture.
+                  Your privacy is of utmost importance to us, so all images are immediately deleted after analysis.
+                  We do not store any of your images.
                 </p>
               </Popup>
             </Nav>
@@ -450,10 +449,6 @@ class App extends React.Component {
               }
               <img src={picture} alt="upload" style={{display: 'none', height: scaledHeight, width: 'auto'}} ref={this.imgref}/>
               <canvas width={imgWidth} height={imgHeight} ref={this.canvasref} />
-              {loading ?
-                <Loader className="loader-pos"type="TailSpin" color="#00BFFF" height={160} width={160} />
-                : null
-              }
               {isValidImg ?
                 <div className="insights-text">
                   <div><b>{ avgPosture }</b></div>
