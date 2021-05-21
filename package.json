@@ -25,7 +25,7 @@
   },
   "scripts": {
     "start": "webpack serve",
-    "build": "webpack -p",
+    "build": "webpack",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
