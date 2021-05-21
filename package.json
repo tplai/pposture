@@ -1,27 +1,64 @@
 {
-  "main": "node_modules/expo/AppEntry.js",
-  "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "eject": "expo eject"
-  },
+  "name": "pposture-react",
+  "version": "0.1.0",
+  "private": false,
+  "license": "MIT",
+  "main": "index.js",
   "dependencies": {
+    "@babel/polyfill": "^7.12.1",
+    "@babel/runtime": "^7.14.0",
     "@tensorflow-models/posenet": "^2.2.1",
-    "@tensorflow/tfjs": "^2.4.0",
-    "@tensorflow/tfjs-backend-webgl": "^2.4.0",
-    "@tensorflow/tfjs-converter": "^2.4.0",
-    "@tensorflow/tfjs-core": "^2.4.0",
-    "expo": "~39.0.2",
-    "expo-status-bar": "~1.0.2",
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-39.0.2.tar.gz",
-    "react-native-web": "~0.13.12"
+    "@tensorflow/tfjs": "^2.7.0",
+    "@tensorflow/tfjs-backend-webgl": "^2.7.0",
+    "@tensorflow/tfjs-converter": "^2.7.0",
+    "@tensorflow/tfjs-core": "^2.7.0",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "bootstrap": "^4.5.3",
+    "react": "^17.0.2",
+    "react-bootstrap": "^1.4.0",
+    "react-dom": "^17.0.1",
+    "react-images-upload": "^1.2.8",
+    "react-scripts": "4.0.0",
+    "reactjs-popup": "^2.0.4"
+  },
+  "scripts": {
+    "start": "webpack serve",
+    "build": "webpack -p",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "devDependencies": {
-    "@babel/core": "~7.9.0"
-  },
-  "private": true
+    "@babel/cli": "^7.14.3",
+    "@babel/core": "^7.14.3",
+    "@babel/plugin-transform-runtime": "^7.14.3",
+    "@babel/preset-env": "^7.14.2",
+    "@babel/preset-react": "^7.13.13",
+    "babel-loader": "^8.2.2",
+    "css-loader": "^5.2.5",
+    "file-loader": "^6.2.0",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.37.1",
+    "webpack-cli": "^4.7.0",
+    "webpack-dev-server": "^3.11.2"
+  }
 }

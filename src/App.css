@@ -1,0 +1,33 @@
+.upload {
+  display: block;
+  text-align: center;
+}
+
+.popup-content {
+  margin: auto;
+  background: rgb(205, 205, 205);
+  width: 50%;
+  padding: 5px;
+}
+
+.insights-text {
+  font-size: 16px;
+}
+
+.homepage-info {
+  margin: auto;
+  padding-top: 16px;
+  width: 40%;
+}
+
+.space {
+  height: 16px;
+}
+
+.loader-pos {
+  padding-top: 64px;
+}
+
+.popup-content {
+  width: 43%;
+}
